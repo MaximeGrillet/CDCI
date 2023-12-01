@@ -1,0 +1,44 @@
+name: Deploy to Surge
+
+# déclenche l'action automatiquement après un push sur la branch main
+on:
+  push:
+    branches:
+      - main
+      #- dev
+
+# définition des permissions et autorisation de permettre le déploiement sur GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# autorise un déploiement à la fois
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  buidNdeploy:
+    environment: production
+    runs-on: ubuntu-latest
+    defaults:
+      shell: bash
+      working-directory: ./
+    steps:
+      # Récupération du code du projet
+      - name: Fetch code
+        uses: actions/checkout@v4
+
+      # Installation des dépendances
+      - name: Install dependencies
+        run: npm install
+
+      # Build du projet (transpilation ts -> js, scss -> css)
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to Surge
+        run: |
+          npm install -g surge
+          surge ./dist react-surge-maximegrillet.surge.sh
